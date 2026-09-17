@@ -109,7 +109,37 @@ src/main/resources/
 
 ## Actividades propuestas
 1. Revisar el código de configuración de seguridad (`SecurityConfig`) e identificar cómo se definen los endpoints públicos y protegidos.
+
+R/ En la clase "SecurityConfig" donde se definen cuale seran los endpoint publicos (todo endpoint al cual cualquier usuario podra acceder sin encesidad de algun permiso valido) se define con la ruta del endpoint seguido por un ".permitAll" que asegura que el endpoint no tiene resticcion de acceso  
+
+```
+.requestMatchers("/actuator/health", "/auth/login").permitAll()
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+```
+
+y los endpoints protegidos (todo endpoint que requerira de un token con un JWT valido que se asigne), se definen con la ruta del enpoint seguido por un .hasAnyAuthority("SCOPE_xxx").
+
+```
+.requestMatchers("/api/**").hasAnyAuthority("SCOPE_blueprints.read", "SCOPE_blueprints.write")
+                .anyRequest().authenticated()
+```
+
 2. Explorar el flujo de login y analizar las claims del JWT emitido.
+
+R/ El programa inicia de manera simple recibiendo las credenciales de "usuario" y la "contraseña" donde las recibe y la clase "AuthController" con ayuda de la clase "InMemoryUserService" analiza que los datos ingresados esten registrados y sean validos, en caso de que los datos ingresados no sean validos, este retornara un mensaje de error diciendo que las credenciales son invalidas, y esto poniendo todo con el status de error 401, que corresponde a lo ya mencionada de credenciales invalidas, Cuando las credenciales sean validas, este continuara.
+
+Y lo que son los claims del JWT este contine:
+estos claims son mas estandar que deberia de contener siempre un  JWT
+  - issuer: el cual da una identificacion de quienemitio el token 
+  - issuedAt: fecha de emicion de token
+  - expiresAt: fecha expiracion del token
+  - subject: usuario autenticado
+
+ya los otros claims son mas personalizados a la necesidad del rograma que son
+  - .claim: el cual por medio de los scope(las etiquetas de permisos) define los permisos que se le asignara al usuario autenticado
+
+
+
 3. Extender los scopes (`blueprints.read`, `blueprints.write`) para controlar otros endpoints de la API, del laboratorio P1 trabajado.
 4. Modificar el tiempo de expiración del token y observar el efecto.
 5. Documentar en Swagger los endpoints de autenticación y de negocio.

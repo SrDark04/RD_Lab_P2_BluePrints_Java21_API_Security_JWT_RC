@@ -44,7 +44,7 @@ public class AuthController {
                 .expiresAt(exp)
                 .subject(req.username())
                 .claim("scope", scope)
-                .build();
+                .build();   
 
         JwsHeader jws = JwsHeader.with(() -> "RS256").build();
         String token = this.encoder.encode(JwtEncoderParameters.from(jws, claims)).getTokenValue();
