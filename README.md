@@ -311,17 +311,19 @@ Y lo que son los claims del JWT este contine: estos claims son mas estandar que 
 
     De esta manera despues de esto realizamos la prueba reiniciando la app y esperando 1 minuto (60 segundos) para que el token expire, al pasar este tiempo lo que podemos visualizar es que al realizar un curl con el token expirado nos retornara un 401 Unauthorized, lo cual nos indica que el token ya no es valido y que debemos de volver a realizar el login para obtener un nuevo token.
 
-5. Para realizar la documentacion Swagger solo tenemos que realizar la adicion de un import en la clase ```BluePrintsAPIController.java``` y despues de esto, realizaremos la adicion de un decorador en cada uno de los endpoint que requiera de un scope, este decorador es el siguiente:
-En cada uno de los endpoint que requiera de un scope, realizaremos la adicion del decorador ```@SecurityRequirement(name = "bearerAuth")```
+5. Para realizar la documentacion Swagger / OpenAPI:
+    - En la clase ```OpenApiConfig.java``` se configura el componente de seguridad ```bearerAuth``` de tipo HTTP Bearer con formato JWT.
+    - En la clase ```AuthController.java``` se documenta el endpoint público ```/auth/login``` con ```@Tag(name = "Authentication")```, ```@Operation``` y ```@ApiResponses``` (200 OK y 401 Unauthorized), agregando ```@SecurityRequirements``` para indicar que es un endpoint público que no requiere token previo.
+    - En la clase ```BlueprintsAPIController.java``` se agregaron las descripciones de operación y el decorador ```@SecurityRequirement(name = "bearerAuth")``` en cada endpoint que requiere permisos de seguridad.
 
-    Las pruebas realizadar en swagger fueron las siguientes:
+    Las pruebas realizadas en swagger fueron las siguientes:
 
     1. Abrimos http://localhost:8080/swagger-ui/index.html
     2. Llamamos al POST /auth/login con {"username":"student","password":"student123"}
-    3. Copiaamor el access_token
+    3. Copiamos el access_token
     4. Nos fuimos al apartado de Authorize 
-    5. Pegamos el token en y le dimos click en Authorize
-    5. Ahora todos los endpoints del candado se pueden ejecutar desde Swagger
+    5. Pegamos el token y le dimos click en Authorize
+    6. Ahora todos los endpoints con candado se pueden ejecutar autorizados desde Swagger
 
     ![Prueba de Swagger 1](src/main/resources/images/PruebaSwagger1.png)
     ![Prueba de Swagger 2](src/main/resources/images/PruebaSwagger2.png)
