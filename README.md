@@ -238,16 +238,71 @@ Proyecto educativo con fines académicos – Escuela Colombiana de Ingeniería J
       -H "Authorization: Bearer $TOKEN"
     ```
 
-2. El programa inicia de manera simple recibiendo las credenciales de "usuario" y la "contraseña" donde las recibe y la clase "AuthController" con ayuda de la clase "InMemoryUserService" analiza que los datos ingresados esten registrados y sean validos, en caso de que los datos ingresados no sean validos, este retornara un mensaje de error diciendo que las credenciales son invalidas, y esto poniendo todo con el status de error 401, que corresponde a lo ya mencionada de credenciales invalidas, Cuando las credenciales sean validas, este continuara.
-Y lo que son los claims del JWT este contine: estos claims son mas estandar que deberia de contener siempre un JWT
-    - issuer: el cual da una identificacion de quien emitio el token
-    - issuedAt: fecha de emicion de token
-    - expiresAt: fecha expiracion del token
-    - subject: usuario autenticado
+2. # Flujo de Login y Análisis de JWT
 
-    Ya los otros claims son mas personalizados a la necesidad del rograma que son
+aqui nosotros observaremos el flujo del acceso y el funcionamiento de los endpoints libre y los protegidos consu acceso con el JWT.
 
-    - .claim: el cual por medio de los scope(las etiquetas de permisos) define los permisos que se le asignara al usuario autenticado
+---
+
+## 1. Levantar la aplicación
+
+Primero verificamos que los contenedores estén activos:
+
+"docker ps"
+la salida esperada
+
+![alt text](image-1.png)
+
+## login con curl
+El cliente envía sus credenciales al endpoint /auth/login, lo cual mediante el siguiente comando que ejecutamos en el cmd para comprobar que funciones deberemos obtener el "acces_token":
+```
+curl -X POST http://localhost:8080/auth/login -H "Content-Type: application/json" -d "{\"username\":\"student\",\"password\":\"student123\"}"
+
+```
+
+con esto si todo funcna de manera corecta y el usuario obtiene los permisos requeridos deberia de darnos esta repsuesta
+
+```
+{
+  "access_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type":"Bearer",
+  "expires_in":3600
+}
+
+```
+![alt text](image-2.png)
+
+##Uso del token en endpoints protegidos
+Con el access_token obtenido, se accede a los recursos protegidos nuevamente ejecutamos este otro comando en el cmd para confirmar que todo funciona y que el token obtenido nos da acceso a los endpoints protegidos:
+
+```
+curl -X GET http://localhost:8080/api/v1/blueprints -H Authorization:Bearer <tu_token>
+
+```
+esperamos una resuesta de este estilo
+
+```
+{
+  "code":200,
+  "message":"Blueprints retrieved",
+  "data":[]
+}
+
+```
+
+que aqui esto fue lo que obtenimos
+
+![alt text](image-3.png)
+
+ya los claims
+
+sub → Identifica al usuario (student).
+
+iss → Quién emitió el token (auth-service).
+
+exp → Fecha de expiración en formato UNIX.
+
+authorities → Roles o permisos asignados (ROLE_USER).
 
 3. Como primer paso, lo que se realizara es la implementacion de los scopes en los endpoints de la API, para esto se realizara la implementacion de los scopes en los endpoints de la clase "BlueprintsAPIController" y se implementara el scope "blueprints.read" para los endpoint que solo requieren lectura y el scope "blueprints.write" para los endpoint que requieren escritura.
 
