@@ -6,6 +6,7 @@ import co.edu.eci.blueprints.persistence.BlueprintNotFoundException;
 import co.edu.eci.blueprints.persistence.BlueprintPersistenceException;
 import co.edu.eci.blueprints.services.BlueprintsServices;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -15,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.*;
 
@@ -31,21 +33,25 @@ public class BlueprintsAPIController {
 
     // GET /api/v1/blueprints
     @GetMapping
+    @PreAuthorize("hasAuthority('SCOPE_blueprints.read')")
     @Operation(summary = "List all blueprints", description = "Returns every blueprint stored in the system")
     @io.swagger.v3.oas.annotations.responses.ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Blueprints retrieved")
     })
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ApiResponse<Set<Blueprint>>> getAll() {
         return ResponseEntity.ok(response(HttpStatus.OK, "Blueprints retrieved", services.getAllBlueprints()));
     }
 
     // GET /api/v1/blueprints/{author}
     @GetMapping("/{author}")
+    @PreAuthorize("hasAuthority('SCOPE_blueprints.read')")
     @Operation(summary = "List blueprints by author", description = "Returns all blueprints belonging to an author")
     @io.swagger.v3.oas.annotations.responses.ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Blueprints retrieved"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Author has no blueprints")
     })
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ApiResponse<?>> byAuthor(@PathVariable String author) {
         try {
             return ResponseEntity.ok(response(HttpStatus.OK, "Blueprints retrieved",
@@ -57,11 +63,13 @@ public class BlueprintsAPIController {
 
     // GET /api/v1/blueprints/{author}/{bpname}
     @GetMapping("/{author}/{bpname}")
+    @PreAuthorize("hasAuthority('SCOPE_blueprints.read')")
     @Operation(summary = "Get a blueprint", description = "Returns one blueprint identified by author and name")
     @io.swagger.v3.oas.annotations.responses.ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Blueprint retrieved"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Blueprint not found")
     })
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ApiResponse<?>> byAuthorAndName(@PathVariable String author, @PathVariable String bpname) {
         try {
             return ResponseEntity.ok(response(HttpStatus.OK, "Blueprint retrieved",
@@ -73,11 +81,13 @@ public class BlueprintsAPIController {
 
     // POST /api/v1/blueprints
     @PostMapping
+    @PreAuthorize("hasAuthority('SCOPE_blueprints.write')")
     @Operation(summary = "Create a blueprint", description = "Creates a blueprint with its initial points")
     @io.swagger.v3.oas.annotations.responses.ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Blueprint created"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request or duplicate blueprint")
     })
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ApiResponse<?>> add(@Valid @RequestBody NewBlueprintRequest req) {
         try {
             Blueprint bp = new Blueprint(req.author(), req.name(), req.points());
@@ -91,12 +101,14 @@ public class BlueprintsAPIController {
 
     // PUT /api/v1/blueprints/{author}/{bpname}/points
     @PutMapping("/{author}/{bpname}/points")
+    @PreAuthorize("hasAuthority('SCOPE_blueprints.write')")
     @Operation(summary = "Add a point", description = "Adds a point to an existing blueprint")
     @io.swagger.v3.oas.annotations.responses.ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "202", description = "Point accepted"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Blueprint not found"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request body")
     })
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ApiResponse<?>> addPoint(@PathVariable String author, @PathVariable String bpname,
             @Valid @RequestBody Point p) {
         try {
@@ -135,12 +147,14 @@ public class BlueprintsAPIController {
 
     // PUT /api/v1/blueprints/{author}/{bpname}
     @PutMapping("/{author}/{bpname}")
+    @PreAuthorize("hasAuthority('SCOPE_blueprints.write')")
     @Operation(summary = "Update a blueprint", description = "Updates the points of an existing blueprint")
     @io.swagger.v3.oas.annotations.responses.ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "202", description = "Blueprint updated"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Blueprint not found"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request body")
     })
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<?> updatePoints(@PathVariable String author, @PathVariable String bpname,
             @RequestBody List<Point> points) {
         try {

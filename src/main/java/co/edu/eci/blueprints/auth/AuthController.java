@@ -23,8 +23,11 @@ public class AuthController {
         this.props = props;
     }
 
-    public record LoginRequest(String username, String password) {}
-    public record TokenResponse(String access_token, String token_type, long expires_in) {}
+    public record LoginRequest(String username, String password) {
+    }
+
+    public record TokenResponse(String access_token, String token_type, long expires_in) {
+    }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest req) {
@@ -36,7 +39,10 @@ public class AuthController {
         long ttl = props.tokenTtlSeconds() != null ? props.tokenTtlSeconds() : 3600;
         Instant exp = now.plusSeconds(ttl);
 
-        String scope = "blueprints.read blueprints.write";
+        String scope = switch (req.username()) {
+            case "assistant" -> "bluesprints.read";
+            default -> "bluesprints.read bluesprints.write";
+        };
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer(props.issuer())
