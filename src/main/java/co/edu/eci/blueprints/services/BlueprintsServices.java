@@ -44,4 +44,8 @@ public class BlueprintsServices {
             throws BlueprintNotFoundException {
         persistence.updateBlueprint(author, name, points);
     }
+
+    public void deleteBlueprint(String author, String name) throws BlueprintNotFoundException {
+        persistence.deleteBlueprint(author, name);
+    }
 }

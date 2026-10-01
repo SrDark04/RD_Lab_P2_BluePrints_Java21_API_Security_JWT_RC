@@ -13,6 +13,11 @@ import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import java.util.List;
 
 @Configuration
 @EnableConfigurationProperties(RsaKeyProperties.class)
@@ -21,14 +26,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/actuator/health", "/auth/login").permitAll()
-                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                .requestMatchers("/api/**").hasAnyAuthority("SCOPE_blueprints.read", "SCOPE_blueprints.write")
-                .anyRequest().authenticated()
-            )
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
+                .cors(Customizer.withDefaults())
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/actuator/health", "/auth/login").permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/ws-blueprints/**").permitAll() // Allow WebSocket connections without
+                                                                          // authentication
+                        .requestMatchers("/api/**").hasAnyAuthority("SCOPE_blueprints.read", "SCOPE_blueprints.write")
+                        .anyRequest().authenticated())
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
         return http.build();
     }
 
@@ -48,5 +55,17 @@ public class SecurityConfig {
                 .privateKey(keyProvider.privateKey())
                 .build();
         return new NimbusJwtEncoder(new ImmutableJWKSet<SecurityContext>(new JWKSet(rsaKey)));
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration cfg = new CorsConfiguration();
+        cfg.setAllowedOriginPatterns(List.of("http://localhost:*"));
+        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        cfg.setAllowedHeaders(List.of("*"));
+        cfg.setAllowCredentials(true);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", cfg);
+        return source;
     }
 }

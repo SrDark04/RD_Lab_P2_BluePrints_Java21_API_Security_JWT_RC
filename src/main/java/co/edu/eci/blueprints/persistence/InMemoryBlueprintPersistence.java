@@ -2,12 +2,15 @@ package co.edu.eci.blueprints.persistence;
 
 import co.edu.eci.blueprints.model.Blueprint;
 import co.edu.eci.blueprints.model.Point;
+
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+@Primary
 @Repository
 public class InMemoryBlueprintPersistence implements BlueprintPersistence {
 
@@ -76,5 +79,14 @@ public class InMemoryBlueprintPersistence implements BlueprintPersistence {
         Blueprint bp = getBlueprint(author, name);
         bp.clearPoints();
         points.forEach(bp::addPoint);
+    }
+
+    @Override
+    public void deleteBlueprint(String author, String name) throws BlueprintNotFoundException {
+        String key = keyOf(author, name);
+        if (!blueprints.containsKey(key)) {
+            throw new BlueprintNotFoundException("Blueprint not found: %s/%s".formatted(author, name));
+        }
+        blueprints.remove(key);
     }
 }

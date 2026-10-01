@@ -166,4 +166,17 @@ public class BlueprintsAPIController {
         }
     }
 
+    @DeleteMapping("/{author}/{bpname}")
+    @PreAuthorize("hasAuthority('SCOPE_blueprints.write')")
+    @Operation(summary = "Delete a blueprint", description = "Deletes a blueprint by author and name")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<?> delete(@PathVariable String author, @PathVariable String bpname) {
+        try {
+            services.deleteBlueprint(author, bpname);
+            return ResponseEntity.noContent().build();
+        } catch (BlueprintNotFoundException e) {
+            return error(HttpStatus.NOT_FOUND, e.getMessage());
+        }
+    }
+
 }

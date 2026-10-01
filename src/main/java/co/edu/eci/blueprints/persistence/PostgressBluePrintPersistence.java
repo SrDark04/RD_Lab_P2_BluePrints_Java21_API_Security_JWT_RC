@@ -14,7 +14,6 @@ import co.edu.eci.blueprints.model.Blueprint;
 import co.edu.eci.blueprints.model.Point;
 
 @Component
-@Primary
 public class PostgressBluePrintPersistence implements BlueprintPersistence {
 
     private final SpringDataBlueprintRepository repository;
@@ -91,5 +90,13 @@ public class PostgressBluePrintPersistence implements BlueprintPersistence {
         entity.getPoints().clear();
         points.forEach(p -> entity.addPoint(p.x(), p.y()));
         repository.save(entity);
+    }
+
+    @Override
+    public void deleteBlueprint(String author, String name) throws BlueprintNotFoundException {
+        BluePrint entity = repository.findByAuthorAndName(author, name)
+                .orElseThrow(() -> new BlueprintNotFoundException(
+                        "Blueprint not found: %s/%s".formatted(author, name)));
+        repository.delete(entity);
     }
 }
